@@ -1,12 +1,19 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import VideoPlayer from "../../components/VideoPlayer"; // Assuming correct path
+import VideoPlayer from "../../components/VideoPlayer";
 
 const API_URL = "https://voicea-ny1b.onrender.com/api/videos";
 
-const StudentViewVideos = () => {
+// ✅ Define props type
+interface ViewVideoProps {
+  userRole: string;
+  userEmail: string;
+}
+
+// ✅ Accept props
+const ViewVideo = ({ userRole, userEmail }: ViewVideoProps) => {
   const [videos, setVideos] = useState<any[]>([]);
-  const [playingIndex, setPlayingIndex] = useState<number>(0); // Track the playing video index
+  const [playingIndex, setPlayingIndex] = useState<number>(0);
 
   useEffect(() => {
     fetchVideos();
@@ -21,7 +28,7 @@ const StudentViewVideos = () => {
       );
       setVideos(sortedVideos);
       if (sortedVideos.length > 0) {
-        setPlayingIndex(0); // Start playing from the most recent video
+        setPlayingIndex(0);
       }
     } catch (error) {
       console.error("Error fetching videos:", error);
@@ -30,7 +37,7 @@ const StudentViewVideos = () => {
 
   const handleVideoEnd = () => {
     if (playingIndex < videos.length - 1) {
-      setPlayingIndex(playingIndex + 1); // Play the next video
+      setPlayingIndex(playingIndex + 1);
     }
   };
 
@@ -65,12 +72,15 @@ const StudentViewVideos = () => {
                 >
                   ▶ Play
                 </button>
-                <button
-                  onClick={() => handleDelete(vid._id)}
-                  className="text-red-600"
-                >
-                  🗑 Delete
-                </button>
+                {/* Only allow delete if user is a teacher */}
+                {userRole === "teacher" && (
+                  <button
+                    onClick={() => handleDelete(vid._id)}
+                    className="text-red-600"
+                  >
+                    🗑 Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -80,12 +90,12 @@ const StudentViewVideos = () => {
       {videos.length > 0 && playingIndex < videos.length && (
         <VideoPlayer
           videoUrl={videos[playingIndex].videoUrl}
-          onClose={() => setPlayingIndex(videos.length)} // Close playback
-          onEnded={handleVideoEnd} // Go to next video when ended
+          onClose={() => setPlayingIndex(videos.length)}
+          onEnded={handleVideoEnd}
         />
       )}
     </div>
   );
 };
 
-export default StudentViewVideos;
+export default ViewVideo;
