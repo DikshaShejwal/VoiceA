@@ -2,9 +2,13 @@ export {};
 
 declare global {
   interface Window {
-    SpeechRecognition: any;
-    webkitSpeechRecognition: any;
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
   }
 
-  var SpeechRecognition: any;
+  var SpeechRecognition: typeof SpeechRecognition;
+
+  interface SpeechRecognitionEvent extends Event {
+    readonly results: SpeechRecognitionResultList;
+  }
 }
