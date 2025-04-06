@@ -7,7 +7,7 @@ export default function ViewAssignments() {
   const [assignments, setAssignments] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/assignments/all")
+    fetch("https://voicea-ny1b.onrender.com/api/assignments/all")
       .then((res) => res.json())
       .then((data) => setAssignments(data.assignments))
       .catch((error) => console.error("❌ Error fetching assignments:", error));
