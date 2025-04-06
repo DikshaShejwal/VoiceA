@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { VoiceAssistant } from "@/components/Chatbot";
 import { Mic } from "lucide-react";
+
+// ✅ TypeScript support for window.SpeechRecognition
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
+
+type SpeechRecognition = any;
+type SpeechRecognitionEvent = any;
 
 export default function QuestionAnswer() {
   const [isRecording, setIsRecording] = useState(false);
@@ -13,14 +23,16 @@ export default function QuestionAnswer() {
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        window.SpeechRecognition || window.webkitSpeechRecognition;
 
       if (SpeechRecognition) {
         const recognitionInstance = new SpeechRecognition();
         recognitionInstance.lang = "en-US";
+
         recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
           setTranscribedText(event.results[0][0].transcript);
         };
+
         setRecognition(recognitionInstance);
       }
     }
@@ -60,9 +72,12 @@ export default function QuestionAnswer() {
       if (response.ok) {
         alert("✅ Question submitted successfully!");
         setTranscribedText("");
+      } else {
+        alert("❌ Failed to submit the question. Please try again.");
       }
     } catch (error) {
       console.error("❌ Error submitting question:", error);
+      alert("❌ Something went wrong. Please try again.");
     }
   };
 
