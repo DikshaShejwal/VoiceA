@@ -1,17 +1,12 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import VideoPlayer from "../../components/VideoPlayer";
+import VideoPlayer from "../../components/VideoPlayer"; // Assuming correct path
 
 const API_URL = "https://voicea-ny1b.onrender.com/api/videos";
 
-interface Props {
-  userRole: string;
-  userEmail: string;
-}
-
-const StudentViewVideos = ({ userRole, userEmail }: Props) => {
+const StudentViewVideos = () => {
   const [videos, setVideos] = useState<any[]>([]);
-  const [playingIndex, setPlayingIndex] = useState<number>(0);
+  const [playingIndex, setPlayingIndex] = useState<number>(0); // Track the playing video index
 
   useEffect(() => {
     fetchVideos();
@@ -26,7 +21,7 @@ const StudentViewVideos = ({ userRole, userEmail }: Props) => {
       );
       setVideos(sortedVideos);
       if (sortedVideos.length > 0) {
-        setPlayingIndex(0);
+        setPlayingIndex(0); // Start playing from the most recent video
       }
     } catch (error) {
       console.error("Error fetching videos:", error);
@@ -35,7 +30,7 @@ const StudentViewVideos = ({ userRole, userEmail }: Props) => {
 
   const handleVideoEnd = () => {
     if (playingIndex < videos.length - 1) {
-      setPlayingIndex(playingIndex + 1);
+      setPlayingIndex(playingIndex + 1); // Play the next video
     }
   };
 
@@ -51,7 +46,7 @@ const StudentViewVideos = ({ userRole, userEmail }: Props) => {
   return (
     <div className="p-6 bg-gray-100 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-purple-600 text-center mb-4">
-        {userRole === "teacher" ? "Teacher: Manage Uploaded Videos" : "Student: View Uploaded Videos"}
+        Student: View Uploaded Videos
       </h2>
 
       {videos.length === 0 ? (
@@ -70,14 +65,12 @@ const StudentViewVideos = ({ userRole, userEmail }: Props) => {
                 >
                   ▶ Play
                 </button>
-                {userRole === "teacher" && (
-                  <button
-                    onClick={() => handleDelete(vid._id)}
-                    className="text-red-600"
-                  >
-                    🗑 Delete
-                  </button>
-                )}
+                <button
+                  onClick={() => handleDelete(vid._id)}
+                  className="text-red-600"
+                >
+                  🗑 Delete
+                </button>
               </div>
             </div>
           ))}
@@ -87,8 +80,8 @@ const StudentViewVideos = ({ userRole, userEmail }: Props) => {
       {videos.length > 0 && playingIndex < videos.length && (
         <VideoPlayer
           videoUrl={videos[playingIndex].videoUrl}
-          onEnded={handleVideoEnd}
-          onClose={() => setPlayingIndex(videos.length)}
+          onClose={() => setPlayingIndex(videos.length)} // Close playback
+          onEnded={handleVideoEnd} // Go to next video when ended
         />
       )}
     </div>
