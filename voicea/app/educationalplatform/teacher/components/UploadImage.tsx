@@ -17,7 +17,7 @@ export default function UploadImage() {
     const formData = new FormData();
     formData.append("image", selectedFile);
 
-    const response = await fetch("http://localhost:5000/api/upload-image", {
+    const response = await fetch("https://voicea-ny1b.onrender.com/api/upload-image", {
       method: "POST",
       body: formData,
     });
