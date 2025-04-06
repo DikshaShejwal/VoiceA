@@ -14,7 +14,8 @@ const VoiceNoteTaker: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [reminderText, setReminderText] = useState<string>("");
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<InstanceType<typeof (window as any).SpeechRecognition> | null>(null);
+
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("voiceNotes") || "[]");
