@@ -48,7 +48,7 @@ export default function QuestionAnswer() {
     }
 
     try {
-      const response = await fetch("http://localhost:5000/api/questions/ask-question", {
+      const response = await fetch("https://voicea-ny1b.onrender.com/api/questions/ask-question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
