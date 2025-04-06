@@ -1,24 +1,25 @@
-import React from "react";
+interface VideoPlayerProps {
+  videoUrl: string;
+  onClose: () => void;
+  onEnded?: () => void;
+}
 
-const VideoPlayer = ({ videoUrl, onClose }: { videoUrl: string; onClose: () => void }) => {
+const VideoPlayer = ({ videoUrl, onClose, onEnded }: VideoPlayerProps) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75">
-      <div className="relative p-4 bg-white rounded-lg shadow-lg">
+    <div className="fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 flex justify-center items-center z-50">
+      <div className="relative w-full max-w-3xl">
         <video
+          src={videoUrl}
           controls
           autoPlay
-          width="700"
-          height="400"
-          style={{ borderRadius: "10px", background: "black" }}
-        >
-          <source src={videoUrl} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+          className="w-full rounded-lg"
+          onEnded={onEnded}
+        />
         <button
           onClick={onClose}
-          className="absolute top-2 right-2 text-red-600 text-xl font-bold"
+          className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded"
         >
-          ✖
+          ✖ Close
         </button>
       </div>
     </div>
