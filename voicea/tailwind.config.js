@@ -2,7 +2,7 @@
 module.exports = {
   darkMode: "class",
 
-  // ✅ This ensures unused styles are purged and warning is gone
+  // ✅ Ensure Tailwind purges unused styles
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -59,5 +59,6 @@ module.exports = {
     },
   },
 
+  // 🟢 Optional but safe to have
   plugins: [],
 };
