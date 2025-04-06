@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import VideoPlayer from "../../components/VideoPlayer"; 
 
-const API_URL = "http://localhost:5000/api/videos";
+const API_URL = "https://voicea-ny1b.onrender.com/api/videos";
 
 const StudentViewVideos = () => {
   const [videos, setVideos] = useState<any[]>([]);
