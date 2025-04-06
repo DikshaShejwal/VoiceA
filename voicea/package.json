@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "cmdk": "^0.2.2",
+    "cmdk": "^0.1.2",
     "@radix-ui/react-avatar": "^1.1.3",
     "@radix-ui/react-checkbox": "^1.0.3",
     "@radix-ui/react-label": "^2.1.2",
