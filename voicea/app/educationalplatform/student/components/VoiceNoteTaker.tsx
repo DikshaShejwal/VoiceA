@@ -1,56 +1,39 @@
 "use client";
-
 import React, { useState, useRef, useEffect } from "react";
 
-interface Reminder {
+interface VoiceNote {
+  id: number;
   text: string;
-  time: string; // Stored as ISO string
+  timestamp: string;
 }
 
-const VoiceNoteTaker: React.FC = () => {
-  const [isVisible, setIsVisible] = useState<boolean>(true);
-  const [note, setNote] = useState<string>("");
-  const [notes, setNotes] = useState<string[]>([]);
-  const [isRecording, setIsRecording] = useState<boolean>(false);
+interface Reminder {
+  id: number;
+  text: string;
+  time: string;
+}
+
+const VoiceNoteTaker = () => {
+  const [isRecording, setIsRecording] = useState(false);
+  const [noteText, setNoteText] = useState("");
+  const [notes, setNotes] = useState<VoiceNote[]>([]);
   const [reminders, setReminders] = useState<Reminder[]>([]);
-  const [reminderText, setReminderText] = useState<string>("");
-  const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
+  const [reminderText, setReminderText] = useState("");
+
+  const recognitionRef = useRef<any>(null); // <-- Ensure this is inside your component
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("voiceNotes") || "[]");
-    const savedReminders = JSON.parse(localStorage.getItem("reminders") || "[]");
     setNotes(savedNotes);
+
+    const savedReminders = JSON.parse(localStorage.getItem("reminders") || "[]");
     setReminders(savedReminders);
-  }, []);
 
-  useEffect(() => {
-    localStorage.setItem("voiceNotes", JSON.stringify(notes));
-    localStorage.setItem("reminders", JSON.stringify(reminders));
-  }, [notes, reminders]);
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  useEffect(() => {
-    const checkReminders = () => {
-      const now = new Date().toISOString();
-      reminders.forEach((reminder, index) => {
-        if (reminder.time <= now) {
-          const utterance = new SpeechSynthesisUtterance(`Reminder: ${reminder.text}`);
-          window.speechSynthesis.speak(utterance);
-
-          // Remove triggered reminder
-          setReminders((prev) => prev.filter((_, i) => i !== index));
-        }
-      });
-    };
-
-    const interval = setInterval(checkReminders, 10000); // Check every 10 seconds
-    return () => clearInterval(interval);
-  }, [reminders]);
-
-  const startRecording = () => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      alert("Your browser does not support speech recognition.");
+      alert("Speech Recognition API not supported in this browser.");
       return;
     }
 
@@ -59,133 +42,140 @@ const VoiceNoteTaker: React.FC = () => {
     recognitionRef.current.interimResults = true;
     recognitionRef.current.lang = "en-US";
 
-    recognitionRef.current.onstart = () => setIsRecording(true);
-    recognitionRef.current.onend = () => setIsRecording(false);
-
     recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
-      let transcript = "";
+      let interimTranscript = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript + " ";
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          setNoteText(prev => prev + transcript + " ");
+        } else {
+          interimTranscript += transcript;
+        }
       }
-      setNote(transcript.trim());
     };
 
-    recognitionRef.current.start();
+    recognitionRef.current.onerror = (event: any) => {
+      console.error("Speech recognition error", event);
+      setIsRecording(false);
+    };
+
+    recognitionRef.current.onend = () => {
+      setIsRecording(false);
+    };
+  }, []);
+
+  const startRecording = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
   };
 
   const stopRecording = () => {
-    recognitionRef.current?.stop();
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
   };
 
   const saveNote = () => {
-    if (note.trim()) {
-      setNotes([...notes, note]);
-      setNote("");
-    }
+    if (!noteText.trim()) return;
+
+    const newNote: VoiceNote = {
+      id: Date.now(),
+      text: noteText.trim(),
+      timestamp: new Date().toLocaleString(),
+    };
+    const updatedNotes = [newNote, ...notes];
+    setNotes(updatedNotes);
+    localStorage.setItem("voiceNotes", JSON.stringify(updatedNotes));
+    setNoteText("");
   };
 
-  const deleteNote = (index: number) => {
-    setNotes(notes.filter((_, i) => i !== index));
-  };
+  const setReminder = () => {
+    if (!reminderText.trim()) return;
 
-  const playAudio = (text: string) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
+    const newReminder: Reminder = {
+      id: Date.now(),
+      text: reminderText.trim(),
+      time: new Date().toLocaleTimeString(),
+    };
+    const updatedReminders = [newReminder, ...reminders];
+    setReminders(updatedReminders);
+    localStorage.setItem("reminders", JSON.stringify(updatedReminders));
+    setReminderText("");
   };
-
-  const addReminder = () => {
-    if (reminderText.trim()) {
-      const timeInput = prompt("Enter reminder time (HH:MM 24-hour format):");
-      if (timeInput) {
-        const [hours, minutes] = timeInput.split(":").map(Number);
-        if (!isNaN(hours) && !isNaN(minutes) && hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
-          const now = new Date();
-          now.setHours(hours, minutes, 0, 0);
-          setReminders([...reminders, { text: reminderText, time: now.toISOString() }]);
-          setReminderText("");
-        } else {
-          alert("Invalid time format. Please enter HH:MM in 24-hour format.");
-        }
-      }
-    }
-  };
-
-  const deleteReminder = (index: number) => {
-    setReminders(reminders.filter((_, i) => i !== index));
-  };
-
-  if (!isVisible) return null;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-indigo-400 to-purple-500 p-6 relative">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg text-center relative">
-        <button
-          className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-          onClick={() => setIsVisible(false)}
-        >
-          ✖
-        </button>
+    <div className="p-4 max-w-2xl mx-auto bg-white rounded-xl shadow">
+      <h1 className="text-xl font-bold mb-4">Voice Note Taker</h1>
 
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">Voice-Controlled Notes & Reminders</h2>
+      <div className="mb-4">
+        <textarea
+          className="w-full p-2 border rounded"
+          rows={4}
+          value={noteText}
+          onChange={e => setNoteText(e.target.value)}
+          placeholder="Your voice note will appear here..."
+        ></textarea>
+      </div>
 
-        <h3 className="text-xl font-semibold text-gray-800 mb-4">Take a Voice Note</h3>
-        <div className="mb-4 p-4 border rounded bg-gray-100 h-40 overflow-auto text-gray-700">
-          {note || "Start speaking to take notes..."}
-        </div>
+      <div className="flex space-x-2 mb-4">
         <button
-          className={`px-4 py-2 rounded text-white ${isRecording ? "bg-red-500" : "bg-blue-500"}`}
-          onClick={isRecording ? stopRecording : startRecording}
+          onClick={startRecording}
+          disabled={isRecording}
+          className="bg-green-500 text-white px-4 py-2 rounded disabled:opacity-50"
         >
-          {isRecording ? "Stop Recording" : "Start Recording"}
+          Start Recording
         </button>
         <button
-          className="ml-2 px-4 py-2 bg-green-500 text-white rounded"
+          onClick={stopRecording}
+          disabled={!isRecording}
+          className="bg-red-500 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          Stop
+        </button>
+        <button
           onClick={saveNote}
-          disabled={!note.trim()}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Save Note
         </button>
       </div>
 
-      <div className="mt-6 w-full max-w-lg">
-        <h3 className="text-xl font-semibold text-white mb-4">Saved Notes</h3>
-        <div className="grid gap-4">
-          {notes.map((savedNote, index) => (
-            <div key={index} className="p-4 bg-white rounded-lg shadow flex justify-between items-center">
-              <span className="text-gray-800">{savedNote}</span>
-              <div>
-                <button className="text-blue-500 mr-2" onClick={() => playAudio(savedNote)}>▶</button>
-                <button className="text-red-500" onClick={() => deleteNote(index)}>✖</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-6 w-full max-w-lg">
-        <h3 className="text-xl font-semibold text-white mb-4">Reminders</h3>
-        <div className="grid gap-4">
-          {reminders.map((reminder, index) => (
-            <div key={index} className="p-4 bg-white rounded-lg shadow flex justify-between items-center">
-              <span className="text-gray-800">
-                {reminder.text} at{" "}
-                {new Date(reminder.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
-              <button className="text-red-500" onClick={() => deleteReminder(index)}>✖</button>
-            </div>
-          ))}
-        </div>
+      <h2 className="text-lg font-semibold mt-6 mb-2">Reminders</h2>
+      <div className="flex mb-4">
         <input
-          className="mt-4 p-2 rounded text-gray-800"
           type="text"
-          placeholder="Reminder text..."
+          className="w-full p-2 border rounded-l"
           value={reminderText}
-          onChange={(e) => setReminderText(e.target.value)}
+          onChange={e => setReminderText(e.target.value)}
+          placeholder="Set a reminder..."
         />
-        <button className="ml-2 px-4 py-2 bg-yellow-500 text-white rounded" onClick={addReminder}>
-          Add Reminder
+        <button
+          onClick={setReminder}
+          className="bg-purple-500 text-white px-4 py-2 rounded-r"
+        >
+          Add
         </button>
       </div>
+
+      <ul className="list-disc pl-5 space-y-1">
+        {reminders.map(reminder => (
+          <li key={reminder.id}>
+            {reminder.text} <span className="text-gray-500 text-sm">({reminder.time})</span>
+          </li>
+        ))}
+      </ul>
+
+      <h2 className="text-lg font-semibold mt-6 mb-2">Saved Notes</h2>
+      <ul className="list-disc pl-5 space-y-2">
+        {notes.map(note => (
+          <li key={note.id}>
+            <strong>{note.timestamp}:</strong> {note.text}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
