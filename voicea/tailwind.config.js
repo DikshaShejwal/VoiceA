@@ -1,6 +1,8 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: "class",
+
+  // ✅ This ensures unused styles are purged and warning is gone
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -8,6 +10,7 @@ module.exports = {
     "./src/**/*.{ts,tsx}",
     "./**/*.{js,ts,jsx,tsx,mdx}",
   ],
+
   theme: {
     extend: {
       colors: {
@@ -55,5 +58,6 @@ module.exports = {
       },
     },
   },
+
   plugins: [],
 };
