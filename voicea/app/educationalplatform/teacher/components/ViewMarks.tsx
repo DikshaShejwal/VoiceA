@@ -6,7 +6,7 @@ export default function ViewMarks() {
   const [marks, setMarks] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/get-marks")
+    fetch("https://voicea-ny1b.onrender.com/api/get-marks")
       .then((res) => res.json())
       .then((data) => setMarks(data))
       .catch((error) => console.error("Error fetching marks:", error));
