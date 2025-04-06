@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 
 const API_URL = "https://voicea-ny1b.onrender.com/api/questions";
 
+
 export default function TeacherResponse() {
   const [questions, setQuestions] = useState<any[]>([]);
   const [selectedQuestion, setSelectedQuestion] = useState<any | null>(null);
