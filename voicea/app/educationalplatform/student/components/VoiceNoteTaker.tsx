@@ -14,8 +14,7 @@ const VoiceNoteTaker: React.FC = () => {
   const [isRecording, setIsRecording] = useState<boolean>(false);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [reminderText, setReminderText] = useState<string>("");
-  const recognitionRef = useRef<InstanceType<typeof (window as any).SpeechRecognition> | null>(null);
-
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("voiceNotes") || "[]");
@@ -37,7 +36,7 @@ const VoiceNoteTaker: React.FC = () => {
           const utterance = new SpeechSynthesisUtterance(`Reminder: ${reminder.text}`);
           window.speechSynthesis.speak(utterance);
 
-          // Remove the reminder after triggering
+          // Remove triggered reminder
           setReminders((prev) => prev.filter((_, i) => i !== index));
         }
       });
@@ -61,13 +60,13 @@ const VoiceNoteTaker: React.FC = () => {
 
     recognitionRef.current.onstart = () => setIsRecording(true);
     recognitionRef.current.onend = () => setIsRecording(false);
-    
+
     recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
       let transcript = "";
       for (let i = event.resultIndex; i < event.results.length; i++) {
         transcript += event.results[i][0].transcript + " ";
       }
-      setNote(transcript);
+      setNote(transcript.trim());
     };
 
     recognitionRef.current.start();
@@ -114,14 +113,12 @@ const VoiceNoteTaker: React.FC = () => {
     setReminders(reminders.filter((_, i) => i !== index));
   };
 
-  if (!isVisible) return null; // Hide the box when closed
+  if (!isVisible) return null;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-r from-indigo-400 to-purple-500 p-6 relative">
       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-lg text-center relative">
-        
-        {/* Close Button */}
-        <button 
+        <button
           className="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
           onClick={() => setIsVisible(false)}
         >
@@ -129,7 +126,7 @@ const VoiceNoteTaker: React.FC = () => {
         </button>
 
         <h2 className="text-3xl font-bold text-gray-800 mb-6">Voice-Controlled Notes & Reminders</h2>
-        
+
         <h3 className="text-xl font-semibold text-gray-800 mb-4">Take a Voice Note</h3>
         <div className="mb-4 p-4 border rounded bg-gray-100 h-40 overflow-auto text-gray-700">
           {note || "Start speaking to take notes..."}
@@ -140,7 +137,11 @@ const VoiceNoteTaker: React.FC = () => {
         >
           {isRecording ? "Stop Recording" : "Start Recording"}
         </button>
-        <button className="ml-2 px-4 py-2 bg-green-500 text-white rounded" onClick={saveNote} disabled={!note.trim()}>
+        <button
+          className="ml-2 px-4 py-2 bg-green-500 text-white rounded"
+          onClick={saveNote}
+          disabled={!note.trim()}
+        >
           Save Note
         </button>
       </div>
@@ -165,7 +166,10 @@ const VoiceNoteTaker: React.FC = () => {
         <div className="grid gap-4">
           {reminders.map((reminder, index) => (
             <div key={index} className="p-4 bg-white rounded-lg shadow flex justify-between items-center">
-              <span className="text-gray-800">{reminder.text} at {new Date(reminder.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              <span className="text-gray-800">
+                {reminder.text} at{" "}
+                {new Date(reminder.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              </span>
               <button className="text-red-500" onClick={() => deleteReminder(index)}>✖</button>
             </div>
           ))}
