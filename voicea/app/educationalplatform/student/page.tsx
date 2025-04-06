@@ -134,8 +134,9 @@ export default function StudentDashboard() {
               </h3>
 
               {activeModal === "video" && user && (
-                <ViewVideo userRole={user.userType} userEmail={user.email} />
-              )}
+  <ViewVideo userRole={user.userType} userEmail={user.email} />
+)}
+
               {activeModal === "qa" && <QuestionAnswer />}
               {activeModal === "book" && <BookReader />}
               {activeModal === "voice" && <VoiceNoteTaker />}
