@@ -7,13 +7,11 @@ import { Button } from "@/components/ui/button";
 import UploadVideo from "./components/UploadVideo";
 import TeacherResponse from "./components/TeacherResponse";
 import UploadQuiz from "./components/UploadQuiz";
-import ViewMarks from "./components/ViewMarks";
-import ViewAssignment from "./components/ViewAssignment";
 import { VoiceAssistant } from "@/components/Chatbot";
 import { Mic } from "lucide-react";
 
 export default function TeacherDashboard() {
-  const [activeModal, setActiveModal] = useState<"video" | "response" | "quiz" | "marks" | "assignments" | null>(null);
+  const [activeModal, setActiveModal] = useState<"video" | "response" | "quiz" | null>(null);
   const [user, setUser] = useState<{ email: string; userType: string } | null>(null);
   const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const router = useRouter();
@@ -28,7 +26,7 @@ export default function TeacherDashboard() {
     }
   }, [router]);
 
-  const openModal = (type: "video" | "response" | "quiz" | "marks" | "assignments") => {
+  const openModal = (type: "video" | "response" | "quiz") => {
     setActiveModal(type);
   };
 
@@ -62,8 +60,6 @@ export default function TeacherDashboard() {
             { icon: "🎥", title: "Upload Video", desc: "Upload videos for students", action: () => openModal("video") },
             { icon: "📝", title: "Answer Questions", desc: "Respond to student queries", action: () => openModal("response") },
             { icon: "📚", title: "Upload Quiz", desc: "Create and upload quizzes", action: () => openModal("quiz") },
-            { icon: "📊", title: "View Marks", desc: "Check student performance", action: () => openModal("marks") },
-            { icon: "📂", title: "View Assignments", desc: "Review student assignments", action: () => openModal("assignments") },
           ].map(({ icon, title, desc, action }, index) => (
             <motion.div
               key={title}
@@ -102,18 +98,12 @@ export default function TeacherDashboard() {
                   ? "Upload a Video"
                   : activeModal === "response"
                   ? "Answer Student Questions"
-                  : activeModal === "quiz"
-                  ? "Upload a Quiz"
-                  : activeModal === "marks"
-                  ? "View Student Marks"
-                  : "View Assignments"}
+                  : "Upload a Quiz"}
               </h3>
 
               {activeModal === "video" && <UploadVideo />}
               {activeModal === "response" && <TeacherResponse />}
               {activeModal === "quiz" && <UploadQuiz />}
-              {activeModal === "marks" && <ViewMarks />}
-              {activeModal === "assignments" && <ViewAssignment />}
 
               <div className="flex justify-center mt-4">
                 <Button className="bg-red-600 hover:bg-red-700" onClick={closeModal}>
